@@ -1,17 +1,20 @@
 import UserModel from "../models/user.model.js";
 import jwt from  "jsonwebtoken"
 
+
 export async function register(req,res){
     try{
         const {username,email,password}=req.body;
         if(!username || !email || !password){
             return res.status(400).json({success:false,message:"Please provide all the required fields"});
         }
-        const isUserExisted= UserModel.findOne({email,username});
+        const isUserExisted = await UserModel.findOne({
+            $or: [{ email }, { username }]
+        });
         if(isUserExisted){
             return res.status(400).json({success:false,message:"User already exists"});
         }
-        if(!process.env.JWT_SECRET || !process.env.JWT_EXPIRES_IN){
+        if(!process.env.JWT_SECRET){
             return res.status(500).json({success:false,message:"Server configuration error"});
         }
 

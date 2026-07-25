@@ -33,7 +33,7 @@ const interviewScehma = new mongoose.Schema({
         type: Number,
         required: true,
     },
-    questionsanswered: {
+    questionAnswered: {
         type: Number,
         required: true,
     },

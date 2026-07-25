@@ -7,7 +7,11 @@ export async function authUser(req,res,next){
     }
     try{
         const decodedToken=jwt.verify(token,process.env.JWT_SECRET);
-        req.userId=decodedToken.userId;
+        req.userId=decodedToken.id;
+        req.user={
+            id:decodedToken.id,
+            username:decodedToken.username
+        };
         next();
     }
     catch(err){
