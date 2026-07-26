@@ -8,8 +8,8 @@ import { Play, Sparkles, Brain, Cpu, BarChart3, X, CheckCircle2, ArrowRight } fr
 
 export default function Home() {
   const { isLoggedIn } = useAuth();
-  const [showDemoModal, setShowDemoModal] = useState(false);
   const [activeTab, setActiveTab] = useState<'analysis' | 'questions' | 'reports'>('analysis');
+
 
   // Simulator states for live demo card
   const [simStep, setSimStep] = useState(0);
@@ -74,23 +74,16 @@ export default function Home() {
             {/* Action buttons */}
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4 max-w-md mx-auto sm:max-w-none mb-12">
               <Link 
-                href={isLoggedIn ? "/dashboard" : "/register"}
+                href={isLoggedIn ? "/dashboard" : "/login"}
                 className="w-full sm:w-auto px-8 py-4 rounded-[50px] font-bold bg-[#8ed462] hover:bg-[#8ed462]/90 text-[#2c2e2a] border-2 border-[#2c2e2a] transition-all active:scale-95 flex items-center justify-center gap-2 group cursor-pointer"
               >
-                {isLoggedIn ? "Go to Dashboard" : "Get Started"}
+                <span>{isLoggedIn ? "Go to Dashboard" : "Start Practice Now"}</span>
                 <span className="w-2.5 h-2.5 bg-[#2ba0ff] rounded-full border border-[#2c2e2a]"></span>
               </Link>
-              
-              <button 
-                onClick={() => setShowDemoModal(true)}
-                className="w-full sm:w-auto px-8 py-4 rounded-[50px] font-bold bg-white text-[#2c2e2a] border-2 border-[#2c2e2a] hover:bg-[#f5f1e4] transition-all active:scale-95 flex items-center justify-center gap-2 group cursor-pointer"
-              >
-                <Play className="w-4 h-4 fill-current text-[#2c2e2a]" />
-                Watch Demo
-              </button>
             </div>
           </div>
         </section>
+
 
         {/* HERO ILLUSTRATION PANEL (Paper-cut style landscape illustration) */}
         <section className="w-full overflow-hidden rounded-[50px] border-2 border-[#2c2e2a] bg-white relative aspect-[21/9] min-h-[250px] max-h-[480px]">
@@ -183,13 +176,13 @@ export default function Home() {
                   </p>
                 </div>
               </div>
-              <button 
-                onClick={() => setShowDemoModal(true)}
+              <Link 
+                href={isLoggedIn ? "/dashboard" : "/login"}
                 className="pt-6 border-t border-[#2c2e2a]/10 flex items-center gap-1 text-xs font-bold text-[#2c2e2a] hover:text-[#2ba0ff] transition-colors cursor-pointer text-left w-full"
               >
                 <span>Learn more</span>
                 <ArrowRight className="w-3.5 h-3.5" />
-              </button>
+              </Link>
             </div>
 
             {/* Feature Card 2 */}
@@ -205,13 +198,13 @@ export default function Home() {
                   </p>
                 </div>
               </div>
-              <button 
-                onClick={() => setShowDemoModal(true)}
+              <Link 
+                href={isLoggedIn ? "/dashboard" : "/login"}
                 className="pt-6 border-t border-[#2c2e2a]/10 flex items-center gap-1 text-xs font-bold text-[#2c2e2a] hover:text-[#2ba0ff] transition-colors cursor-pointer text-left w-full"
               >
                 <span>Learn more</span>
                 <ArrowRight className="w-3.5 h-3.5" />
-              </button>
+              </Link>
             </div>
 
             {/* Feature Card 3 */}
@@ -227,14 +220,15 @@ export default function Home() {
                   </p>
                 </div>
               </div>
-              <button 
-                onClick={() => setShowDemoModal(true)}
+              <Link 
+                href={isLoggedIn ? "/dashboard" : "/login"}
                 className="pt-6 border-t border-[#2c2e2a]/10 flex items-center gap-1 text-xs font-bold text-[#2c2e2a] hover:text-[#2ba0ff] transition-colors cursor-pointer text-left w-full"
               >
                 <span>Learn more</span>
                 <ArrowRight className="w-3.5 h-3.5" />
-              </button>
+              </Link>
             </div>
+
 
           </div>
         </section>
@@ -268,13 +262,14 @@ export default function Home() {
 
               <div className="pt-4">
                 <Link
-                  href="/register"
+                  href={isLoggedIn ? "/dashboard" : "/login"}
                   className="inline-flex items-center gap-2 px-6 py-3 rounded-[50px] border-2 border-[#2c2e2a] bg-[#8ed462] hover:bg-[#8ed462]/90 text-[#2c2e2a] font-bold text-sm"
                 >
                   <span>Start Free Practice Now</span>
                   <span className="w-2 h-2 bg-[#2ba0ff] rounded-full"></span>
                 </Link>
               </div>
+
             </div>
 
             {/* Right: Simulator Window */}
@@ -353,72 +348,7 @@ export default function Home() {
           </ul>
         </div>
       </footer>
-
-      {/* Demo Modal (Warm Card Popup) */}
-      {showDemoModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-          {/* Backdrop blur */}
-          <div 
-            onClick={() => setShowDemoModal(false)}
-            className="absolute inset-0 bg-[#2c2e2a]/40 backdrop-blur-sm"
-          ></div>
-          
-          {/* Modal Container */}
-          <div className="bg-white border-4 border-[#2c2e2a] rounded-[30px] w-full max-w-2xl relative z-10 overflow-hidden shadow-2xl animate-in zoom-in-95 duration-200">
-            {/* Header */}
-            <div className="flex justify-between items-center px-6 py-4 border-b-2 border-[#2c2e2a] bg-[#f5f1e4]">
-              <h3 className="font-extrabold text-[#2c2e2a] flex items-center gap-2 text-md">
-                <Sparkles className="w-5 h-5 text-[#2ba0ff]" />
-                Interactive Session Demo
-              </h3>
-              <button 
-                onClick={() => setShowDemoModal(false)}
-                className="p-1 rounded-full border-2 border-[#2c2e2a] bg-white text-[#2c2e2a] hover:bg-stone-50 cursor-pointer"
-              >
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-            
-            {/* Modal Body */}
-            <div className="p-8 space-y-6">
-              <h4 className="text-xl font-extrabold text-[#2c2e2a]">How AI Interviewer Works</h4>
-              <p className="text-sm text-[#80827f] leading-relaxed">
-                The platform automates candidate screening by conducting structured conversations. Candidates answer generated questions, and the engine logs sentiment analysis, vocabulary richness, speech pacing, and skill match indices instantly.
-              </p>
-              
-              <div className="grid grid-cols-2 gap-4">
-                <div className="p-4 rounded-[20px] bg-[#f5f1e4] border-2 border-[#2c2e2a] text-center">
-                  <span className="text-3xl font-extrabold text-[#2ba0ff]">98.7%</span>
-                  <p className="text-xs font-bold text-[#2c2e2a] mt-1">Sentiment Accuracy</p>
-                </div>
-                <div className="p-4 rounded-[20px] bg-[#f5f1e4] border-2 border-[#2c2e2a] text-center">
-                  <span className="text-3xl font-extrabold text-[#ff705d]">3x</span>
-                  <p className="text-xs font-bold text-[#2c2e2a] mt-1">Faster Screening</p>
-                </div>
-              </div>
-            </div>
-
-            {/* Footer */}
-            <div className="p-5 bg-[#f5f1e4] border-t-2 border-[#2c2e2a] flex items-center justify-end gap-3">
-              <button 
-                onClick={() => setShowDemoModal(false)}
-                className="px-5 py-2.5 rounded-[50px] border-2 border-[#2c2e2a] bg-white hover:bg-stone-50 text-xs font-bold text-[#2c2e2a]"
-              >
-                Close
-              </button>
-              <Link
-                href="/register"
-                onClick={() => setShowDemoModal(false)}
-                className="px-5 py-2.5 rounded-[50px] border-2 border-[#2c2e2a] bg-[#8ed462] text-xs font-bold text-[#2c2e2a] flex items-center gap-1.5"
-              >
-                <span>Get Started Now</span>
-                <span className="w-1.5 h-1.5 bg-[#2ba0ff] rounded-full"></span>
-              </Link>
-            </div>
-
-          </div>
-        </div>
-      )}
     </div>
   );
 }
+
