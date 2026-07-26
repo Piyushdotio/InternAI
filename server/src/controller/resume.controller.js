@@ -111,36 +111,11 @@ Rules:
             }
         }
 
-        // Fallback analysis if Groq fails or API key missing
+        // Return error if Groq AI fails to extract valid analysis
         if (!analysis || !analysis.summary) {
-            analysis = {
-                summary: "Candidate is a software developer with experience in building scalable web applications, API integrations, and cloud services. Demonstrates strong technical fundamentals and problem-solving abilities.",
-                experienceLevel: "Mid Level",
-                skillsDetected: ["JavaScript", "TypeScript", "Python", "Next.js", "React", "Node.js", "REST APIs", "AWS", "MongoDB", "Docker"],
-                strengths: [
-                    "Full-stack development",
-                    "Agile team collaboration",
-                    "API architecture & performance optimization"
-                ],
-                recommendedDomains: [
-                    {
-                        label: "JavaScript/Node.js",
-                        reason: "The candidate has experience in JavaScript, Node.js, and modern asynchronous web frameworks.",
-                        confidence: 95
-                    },
-                    {
-                        label: "React",
-                        reason: "Demonstrates proficiency in building user interfaces and state management with React.",
-                        confidence: 85
-                    },
-                    {
-                        label: "System Design",
-                        reason: "Shows capability in architecting web applications, database schema design, and cloud services.",
-                        confidence: 75
-                    }
-                ]
-            };
+            return res.status(400).json({ error: "Unable to extract text from resume. Please ensure the uploaded file contains readable text." });
         }
+
 
         // Ensure recommendedDomains labels match valid domains
         if (Array.isArray(analysis.recommendedDomains)) {

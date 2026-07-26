@@ -48,19 +48,19 @@ const Page = () => {
         const fetchHistory = async () => {
             try {
                 const response = await axiosInstance.get('/api/interview');
-                if (response.data?.success && Array.isArray(response.data.interviews) && response.data.interviews.length > 0) {
+                if (response.data?.success && Array.isArray(response.data.interviews)) {
                     const formatted = response.data.interviews.map((item: any) => ({
                         id: item._id || item.id,
-                        topic: item.domain || item.topic || "JavaScript/Node.js",
+                        topic: item.domain || item.topic || "General",
                         date: new Date(item.createdAt || Date.now()).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }),
                         duration: item.duration || 2,
-                        score: typeof item.score !== 'undefined' ? item.score : 85,
+                        score: typeof item.score !== 'undefined' ? item.score : 75,
                     }));
                     setInterviews(formatted);
                     return;
                 }
             } catch (err) {
-                console.warn("Backend interview history fetch error, using local storage fallback:", err);
+                console.warn("Backend interview history fetch error, checking local storage:", err);
             }
 
             try {
@@ -68,20 +68,14 @@ const Page = () => {
                 if (stored) {
                     setInterviews(JSON.parse(stored));
                 } else {
-                    const initialSession: Interview[] = [{
-                        id: 'session-default-1',
-                        topic: 'JavaScript/Node.js',
-                        date: '31 May 2026',
-                        duration: 2,
-                        score: 85,
-                    }];
-                    setInterviews(initialSession);
-                    localStorage.setItem('ai_interview_history', JSON.stringify(initialSession));
+                    setInterviews([]);
                 }
             } catch (err) {
                 console.error("Local storage error:", err);
+                setInterviews([]);
             }
         };
+
 
         if (isLoggedIn) {
             fetchHistory();

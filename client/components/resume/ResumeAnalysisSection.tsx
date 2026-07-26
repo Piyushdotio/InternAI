@@ -89,43 +89,13 @@ export const ResumeAnalysisSection: React.FC = () => {
                 throw new Error("Analysis failed");
             }
         } catch (err: any) {
-            console.warn("Backend analysis failed, using fallback:", err);
-            // Fallback mock analysis if network issue
-            const fallback: ResumeAnalysisData = {
-                summary: "Candidate is a full-stack developer with experience in building scalable web applications, proficient in JavaScript, TypeScript, and Python, with expertise in REST APIs, WebSocket real-time communication, and cloud services.",
-                experienceLevel: "Mid Level",
-                skillsDetected: ["JavaScript", "TypeScript", "Python", "Next.js", "NestJS", "React", "Angular", "AWS", "REST APIs", "WebSocket", "MongoDB", "TensorFlow"],
-                strengths: [
-                    "Full-stack development",
-                    "Agile team management",
-                    "Mentoring junior developers"
-                ],
-                recommendedDomains: [
-                    {
-                        label: "JavaScript/Node.js",
-                        reason: "The candidate has extensive experience in JavaScript, Next.js, and NestJS, making this domain a strong fit.",
-                        confidence: 95
-                    },
-                    {
-                        label: "React",
-                        reason: "The candidate has experience working with React, including building production-grade web applications.",
-                        confidence: 85
-                    },
-                    {
-                        label: "System Design",
-                        reason: "The candidate has experience designing and architecting scalable web applications.",
-                        confidence: 75
-                    }
-                ]
-            };
-            setProgress(100);
-            setTimeout(() => {
-                setAnalysis(fallback);
-                localStorage.setItem('ai_resume_analysis', JSON.stringify(fallback));
-                setIsAnalyzing(false);
-            }, 400);
+            console.error("Backend resume analysis failed:", err);
+            setErrorMsg(err.response?.data?.error || err.message || "Failed to analyze resume. Please ensure you upload a valid PDF or TXT file.");
+            setIsAnalyzing(false);
+            setProgress(0);
         }
     };
+
 
     const triggerFilePicker = () => {
         fileInputRef.current?.click();
