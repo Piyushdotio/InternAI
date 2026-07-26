@@ -34,7 +34,12 @@ async function extractTextFromPDF(buffer) {
         return buffer.toString("utf-8");
     }
 }
-
+/**
+ * @route   POST /api/resume/analyze
+ * @desc    Upload & analyze candidate resume (PDF) using AI to return skills, summary, strengths, and recommended interview domains
+ * @access  Private (Requires Token)
+ * @file    resume - PDF file (multipart/form-data, max 5MB)
+ */
 export const analyzeResume = async (req, res) => {
     try {
         if (!req.file) {

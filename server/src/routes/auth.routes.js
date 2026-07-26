@@ -1,38 +1,31 @@
 import { Router } from "express";
-import {register,login,getMe} from "../controller/auth.controller.js";
-import {authUser} from "../middleware/auth.middleware.js";
+import { register, login, getMe } from "../controller/auth.controller.js";
+import { authUser } from "../middleware/auth.middleware.js";
 
-const authRouter=Router();
-
-
-/**
- * @route POST /api/auth/register
- * @desc Register a new user
- * @access Public
- * @body { username, email, password }
- */
-authRouter.post("/register",register);
-
+const authRouter = Router();
 
 /**
- * @route POST /api/auth/login
- * @desc Login a user
- * @access Public
- * @body { email, password }
+ * @route   POST /api/auth/register
+ * @desc    Register a new user account
+ * @access  Public
+ * @body    { username, email, password }
  */
-
-authRouter.post("/login",login);
-
+authRouter.post("/register", register);
 
 /**
- * @route GET /api/auth/getMe
- * @desc Get current user
- * @access Private
- * @headers { Authorization: Bearer <token> }
+ * @route   POST /api/auth/login
+ * @desc    Authenticate user & return JWT token
+ * @access  Public
+ * @body    { email, password }
  */
+authRouter.post("/login", login);
 
-authRouter.get("/getMe",authUser,getMe);
+/**
+ * @route   GET /api/auth/getMe
+ * @desc    Get currently logged-in user profile
+ * @access  Private (Requires Token)
+ * @headers { Authorization: Bearer <token> } or Cookie { token }
+ */
+authRouter.get("/getMe", authUser, getMe);
 
-
-
-export default authRouter;
+export default authRouter;

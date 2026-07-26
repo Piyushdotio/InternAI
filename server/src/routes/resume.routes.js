@@ -20,6 +20,12 @@ const upload=multer({
     }
 })
 
-ResumeRouter.post("/analyze", authUser,upload.single("resume"), analyzeResume)
+/**
+ * @route   POST /api/resume/analyze
+ * @desc    Upload and analyze resume (PDF) using AI to extract skills, strengths & recommended interview domains
+ * @access  Private (Requires Token)
+ * @file    resume - PDF Document (multipart/form-data, max 5MB)
+ */
+ResumeRouter.post("/analyze", authUser, upload.single("resume"), analyzeResume);
 
-export default ResumeRouter
+export default ResumeRouter;

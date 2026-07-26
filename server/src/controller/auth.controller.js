@@ -2,6 +2,12 @@ import UserModel from "../models/user.model.js";
 import jwt from  "jsonwebtoken"
 
 
+/**
+ * @route   POST /api/auth/register
+ * @desc    Register a new user account
+ * @access  Public
+ * @body    { username, email, password }
+ */
 export async function register(req,res){
     try{
         const {username,email,password}=req.body;
@@ -51,6 +57,12 @@ export async function register(req,res){
     }
 }
 
+/**
+ * @route   POST /api/auth/login
+ * @desc    Authenticate user & return JWT token
+ * @access  Public
+ * @body    { email, password }
+ */
 export async function login(req,res){
     try{
     const {email,password}=req.body;
@@ -100,6 +112,12 @@ export async function login(req,res){
     }
 }
 
+/**
+ * @route   GET /api/auth/getMe
+ * @desc    Get currently logged-in user profile
+ * @access  Private (Requires Token)
+ * @headers Authorization: Bearer <token> or Cookie token
+ */
 export async function getMe(req,res){
     try{
         const user=await UserModel.findById(req.user.id).select("-password");
@@ -117,5 +135,6 @@ export async function getMe(req,res){
         return res.status(500).json({success:false,message:"Internal server error"})
     }
 }
+
 
  

@@ -113,6 +113,7 @@ const InterviewSessionContent = () => {
     const domainKey = searchParams.get('domain') || 'javascript-node';
     const domain = DOMAINS[domainKey] || DOMAINS['javascript-node'];
 
+    const [sessionId, setSessionId] = useState<string | null>(null);
     const [currentQuestionIndex, setCurrentQuestionIndex] = useState<number>(0);
     const [messages, setMessages] = useState<Message[]>([]);
     const [timerSeconds, setTimerSeconds] = useState<number>(0);
@@ -121,17 +122,45 @@ const InterviewSessionContent = () => {
 
     const chatEndRef = useRef<HTMLDivElement>(null);
 
-    // Initialize first question on load
+    // Initialize first question on load by calling backend start API (InterviewModel session creation)
     useEffect(() => {
-        setMessages([
-            {
-                id: 'q-0',
-                type: 'question',
-                text: domain.questions[0],
-                timestamp: new Date().toLocaleTimeString()
+        let isMounted = true;
+        const initInterview = async () => {
+            setIsLoading(true);
+            try {
+                const res = await axiosInstance.post('/api/interview/start', { domain: domain.title });
+                if (isMounted && res.data?.success && res.data?.sessionId) {
+                    setSessionId(res.data.sessionId);
+                    setMessages([
+                        {
+                            id: 'q-0',
+                            type: 'question',
+                            text: res.data.question || domain.questions[0],
+                            timestamp: new Date().toLocaleTimeString()
+                        }
+                    ]);
+                    setIsLoading(false);
+                    return;
+                }
+            } catch (err) {
+                console.warn("Backend start API error, fallback to static question:", err);
             }
-        ]);
-    }, [domainKey]);
+            if (isMounted) {
+                setMessages([
+                    {
+                        id: 'q-0',
+                        type: 'question',
+                        text: domain.questions[0],
+                        timestamp: new Date().toLocaleTimeString()
+                    }
+                ]);
+                setIsLoading(false);
+            }
+        };
+
+        initInterview();
+        return () => { isMounted = false; };
+    }, [domainKey, domain.title]);
 
     // Live Timer increment
     useEffect(() => {
@@ -167,7 +196,7 @@ const InterviewSessionContent = () => {
             console.error("Local storage error:", e);
         }
 
-        // Save to Express Backend Server (MongoDB) using axiosInstance (handles Authorization token)
+        // Save to Express Backend Server (MongoDB) using axiosInstance
         try {
             const response = await axiosInstance.post('/api/interview/save', {
                 topic: domainTitle,
@@ -183,7 +212,7 @@ const InterviewSessionContent = () => {
         }
     };
 
-    // Generate intelligent AI feedback based on user answer
+    // Fallback feedback generator
     const generateFeedback = (userAnswer: string, qIndex: number): string => {
         const isShort = userAnswer.split(' ').length < 10;
         if (isShort) {
@@ -193,7 +222,7 @@ const InterviewSessionContent = () => {
     };
 
     // User submits an answer
-    const handleAnswerSubmit = (answerText: string) => {
+    const handleAnswerSubmit = async (answerText: string) => {
         const userMsg: Message = {
             id: `a-${currentQuestionIndex}`,
             type: 'answer',
@@ -205,10 +234,52 @@ const InterviewSessionContent = () => {
         setMessages(updatedMessages);
         setIsLoading(true);
 
-        // Simulate AI Thinking / API response latency
+        if (sessionId) {
+            try {
+                const res = await axiosInstance.post('/api/interview/submit', {
+                    sessionId,
+                    answer: answerText,
+                    domain: domain.title,
+                    questionsAnswered: currentQuestionIndex
+                });
+
+                if (res.data?.success) {
+                    const feedbackText = res.data.feedback || "Good effort!";
+                    const feedbackMsg: Message = {
+                        id: `f-${currentQuestionIndex}`,
+                        type: 'feedback',
+                        text: feedbackText,
+                        timestamp: new Date().toLocaleTimeString()
+                    };
+
+                    if (res.data.iscomplete) {
+                        const finalMsgs = [...updatedMessages, feedbackMsg];
+                        setMessages(finalMsgs);
+                        setCurrentQuestionIndex(3);
+                        setIsCompleted(true);
+                        saveInterviewToBackend(domain.title, timerSeconds, res.data.score || 75, finalMsgs);
+                    } else {
+                        const nextQText = res.data.question || domain.questions[currentQuestionIndex + 1];
+                        const nextQMsg: Message = {
+                            id: `q-${currentQuestionIndex + 1}`,
+                            type: 'question',
+                            text: nextQText,
+                            timestamp: new Date().toLocaleTimeString()
+                        };
+                        setMessages((prev) => [...prev, feedbackMsg, nextQMsg]);
+                        setCurrentQuestionIndex((prev) => prev + 1);
+                    }
+                    setIsLoading(false);
+                    return;
+                }
+            } catch (err) {
+                console.warn("Backend submit error, using fallback logic:", err);
+            }
+        }
+
+        // Fallback execution
         setTimeout(() => {
             const feedbackText = generateFeedback(answerText, currentQuestionIndex);
-
             const feedbackMsg: Message = {
                 id: `f-${currentQuestionIndex}`,
                 type: 'feedback',
@@ -219,28 +290,26 @@ const InterviewSessionContent = () => {
             const nextIndex = currentQuestionIndex + 1;
 
             if (nextIndex < domain.questions.length) {
-                // Next question available
                 const nextQMsg: Message = {
                     id: `q-${nextIndex}`,
                     type: 'question',
                     text: domain.questions[nextIndex],
                     timestamp: new Date().toLocaleTimeString()
                 };
-
                 setMessages((prev) => [...prev, feedbackMsg, nextQMsg]);
                 setCurrentQuestionIndex(nextIndex);
             } else {
-                // All 3 questions answered -> Mark complete & Save to Backend DB
                 const finalMsgs = [...updatedMessages, feedbackMsg];
                 setMessages(finalMsgs);
-                setCurrentQuestionIndex(3); // 3 of 3
+                setCurrentQuestionIndex(3);
                 setIsCompleted(true);
-                saveInterviewToBackend(domain.title, timerSeconds, 10, finalMsgs);
+                saveInterviewToBackend(domain.title, timerSeconds, 75, finalMsgs);
             }
 
             setIsLoading(false);
         }, 1200);
     };
+
 
     const handleExit = () => {
         if (confirm("Are you sure you want to exit the current interview session?")) {

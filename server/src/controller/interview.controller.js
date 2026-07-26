@@ -12,7 +12,12 @@ After the candidate answers, provide feedback and the next question.
 Return ONLY the question, nothing else.
 `.trim();
 
-// Start a new interview session
+/**
+ * @route   POST /api/interview/start
+ * @desc    Start a new interview session for a domain and generate the first technical question
+ * @access  Private (Requires Auth Token)
+ * @body    { domain: string }
+ */
 const startInterview = async (req, res) => {
     try {
         const { domain } = req.body;
@@ -66,7 +71,12 @@ const startInterview = async (req, res) => {
     }
 };
 
-// Submit answer for a question round
+/**
+ * @route   POST /api/interview/submit
+ * @desc    Submit user answer, obtain AI evaluation feedback and get the next question or final score
+ * @access  Private (Requires Auth Token)
+ * @body    { sessionId: string, answer: string, domain?: string, questionsAnswered?: number }
+ */
 const submitAnswer = async (req, res) => {
     try {
         const {
@@ -165,7 +175,12 @@ const submitAnswer = async (req, res) => {
     }
 };
 
-// Save a completed interview directly into MongoDB
+/**
+ * @route   POST /api/interview/save
+ * @desc    Save a completed interview transcript, domain, score, and duration to database
+ * @access  Private (Requires Auth Token)
+ * @body    { topic?: string, domain?: string, score?: number, duration?: number, questionAnswered?: number, messages?: Array }
+ */
 const saveCompletedInterview = async (req, res) => {
     try {
         const { topic, domain, score, duration, questionAnswered = 3, messages = [] } = req.body;
@@ -208,7 +223,11 @@ const saveCompletedInterview = async (req, res) => {
     }
 };
 
-// Get all completed interviews for logged-in user
+/**
+ * @route   GET /api/interview/
+ * @desc    Get all completed interview sessions for logged-in user
+ * @access  Private (Requires Auth Token)
+ */
 const getInterviews = async (req, res) => {
     try {
         const interviews = await InterviewModel.find({ userId: req.userId, iscomplete: true })
@@ -236,7 +255,12 @@ const getInterviews = async (req, res) => {
     }
 };
 
-// Get single interview by ID
+/**
+ * @route   GET /api/interview/:id
+ * @desc    Get details and message history of a specific interview by session ID
+ * @access  Private (Requires Auth Token)
+ * @param   id - Interview Session ID
+ */
 const getInterview = async (req, res) => {
     try {
         const interview = await InterviewModel.findOne({
@@ -258,6 +282,7 @@ const getInterview = async (req, res) => {
         return res.status(500).json({ success: false, message: "Internal server error" });
     }
 };
+
 
 export {
     startInterview,
