@@ -6,11 +6,13 @@ import { InterviewHeader } from '@/components/interview/InterviewHeader';
 import { ChatMessage, Message } from '@/components/interview/ChatMessage';
 import { InterviewInput } from '@/components/interview/InterviewInput';
 import { InterviewCompletion } from '@/components/interview/InterviewCompletion';
+import { useAuth } from '@/context/Authcontext';
 import { DOMAINS } from '@/lib/domains';
 import axiosInstance from '@/lib/axios';
 
 const InterviewSessionContent = () => {
     const router = useRouter();
+    const { isLoggedIn, isLoading: authLoading } = useAuth();
     const searchParams = useSearchParams();
     const domainKey = searchParams.get('domain') || 'javascript-node';
     const domain = DOMAINS[domainKey] || DOMAINS['javascript-node'];
@@ -30,9 +32,18 @@ const InterviewSessionContent = () => {
 
     const chatEndRef = useRef<HTMLDivElement>(null);
 
+    // Auth protection check
+    useEffect(() => {
+        if (!authLoading && !isLoggedIn) {
+            router.push('/login');
+        }
+    }, [authLoading, isLoggedIn, router]);
+
     // Initialize session with start API or static domain questions
     useEffect(() => {
+        if (!isLoggedIn) return;
         let isMounted = true;
+
         const initInterview = async () => {
             setIsLoading(true);
             try {
@@ -234,7 +245,18 @@ const InterviewSessionContent = () => {
         }
     };
 
+    if (authLoading) {
+        return (
+            <div className="flex items-center justify-center min-h-screen">
+                <p className="text-sm font-medium text-gray-500">Loading auth state...</p>
+            </div>
+        );
+    }
+
+    if (!isLoggedIn) return null;
+
     return (
+
         <div className="h-screen h-[100dvh] flex flex-col bg-gray-50/50 overflow-hidden">
             <InterviewHeader
                 domainTitle={domain.title}

@@ -35,4 +35,10 @@ export const removeUser = () => {
 export const clearAuth = () => {
     removeToken()
     removeUser()
-}
+    if (typeof window !== "undefined") {
+        localStorage.removeItem("ai_interview_history")
+        localStorage.removeItem("ai_resume_analysis")
+        localStorage.removeItem("resume_analysis_result")
+        localStorage.removeItem("resume_file_name")
+    }
+}
