@@ -180,8 +180,20 @@ const InterviewSessionContent = () => {
     }, [messages, isLoading]);
 
 
+    const [finalEvaluation, setFinalEvaluation] = useState<{
+        score: number;
+        technicalAccuracy: number;
+        communicationClarity: number;
+        problemSolving: number;
+    }>({
+        score: 75,
+        technicalAccuracy: 75,
+        communicationClarity: 75,
+        problemSolving: 75,
+    });
+
     // Save completed session to Backend Database & localStorage
-    const saveInterviewToBackend = async (domainTitle: string, durationSecs: number, scoreVal: number, finalMessages: Message[]) => {
+    const saveInterviewToBackend = async (domainTitle: string, durationSecs: number, scoreVal: number, finalMessages: Message[], breakdownObj?: any) => {
         const durationMins = Math.max(1, Math.ceil(durationSecs / 60));
         const todayStr = new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
 
@@ -206,6 +218,7 @@ const InterviewSessionContent = () => {
                 topic: domainTitle,
                 domain: domainTitle,
                 score: scoreVal,
+                breakdown: breakdownObj,
                 duration: durationMins,
                 questionAnswered: 3,
                 messages: finalMessages
@@ -261,7 +274,19 @@ const InterviewSessionContent = () => {
                         setMessages(finalMsgs);
                         setCurrentQuestionIndex(3);
                         setIsCompleted(true);
-                        saveInterviewToBackend(domain.title, timerSeconds, res.data.score || 75, finalMsgs);
+                        const finalScore = Number(res.data.score) || 75;
+                        const breakdown = res.data.breakdown || {
+                            technicalAccuracy: finalScore,
+                            communicationClarity: finalScore,
+                            problemSolving: finalScore
+                        };
+                        setFinalEvaluation({
+                            score: finalScore,
+                            technicalAccuracy: Number(breakdown.technicalAccuracy) || finalScore,
+                            communicationClarity: Number(breakdown.communicationClarity) || finalScore,
+                            problemSolving: Number(breakdown.problemSolving) || finalScore
+                        });
+                        saveInterviewToBackend(domain.title, timerSeconds, finalScore, finalMsgs, breakdown);
                     } else {
                         const nextQText = res.data.question || domain.questions[currentQuestionIndex + 1];
                         const nextQMsg: Message = {
@@ -307,7 +332,26 @@ const InterviewSessionContent = () => {
                 setMessages(finalMsgs);
                 setCurrentQuestionIndex(3);
                 setIsCompleted(true);
-                saveInterviewToBackend(domain.title, timerSeconds, 75, finalMsgs);
+                const userAnswersText = finalMsgs.filter(m => m.type === 'answer').map(m => m.text).join(' ');
+                const wordsCount = userAnswersText.trim().split(/\s+/).length;
+                let fallbackScore = 65;
+                if (wordsCount < 15) fallbackScore = 40;
+                else if (wordsCount < 40) fallbackScore = 72;
+                else fallbackScore = 88;
+
+                const fallbackBreakdown = {
+                    technicalAccuracy: fallbackScore,
+                    communicationClarity: Math.min(98, fallbackScore + 5),
+                    problemSolving: Math.max(20, fallbackScore - 5)
+                };
+
+                setFinalEvaluation({
+                    score: fallbackScore,
+                    technicalAccuracy: fallbackBreakdown.technicalAccuracy,
+                    communicationClarity: fallbackBreakdown.communicationClarity,
+                    problemSolving: fallbackBreakdown.problemSolving
+                });
+                saveInterviewToBackend(domain.title, timerSeconds, fallbackScore, finalMsgs, fallbackBreakdown);
             }
 
             setIsLoading(false);
@@ -360,12 +404,12 @@ const InterviewSessionContent = () => {
                         domainTitle={domain.title}
                         domainIcon={domain.icon}
                         domainIconBg={domain.iconBg}
-                        score={10}
+                        score={finalEvaluation.score}
                         totalQuestions={3}
                         timerSeconds={timerSeconds || 95}
-                        technicalAccuracy={15}
-                        communicationClarity={2}
-                        problemSolving={12}
+                        technicalAccuracy={finalEvaluation.technicalAccuracy}
+                        communicationClarity={finalEvaluation.communicationClarity}
+                        problemSolving={finalEvaluation.problemSolving}
                         onGoToDashboard={() => router.push('/dashboard')}
                         onRestart={() => {
                             setCurrentQuestionIndex(0);
@@ -383,6 +427,7 @@ const InterviewSessionContent = () => {
                     />
                 )}
             </main>
+
 
             {/* Scalable Input Bar */}
             {!isCompleted && (

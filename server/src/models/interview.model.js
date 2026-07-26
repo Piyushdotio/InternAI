@@ -37,15 +37,22 @@ const interviewScehma = new mongoose.Schema({
         type: Number,
         required: true,
     },
-    messages:[MessageSchema],
+    messages: [MessageSchema],
     feedback: {
         type:String,
         default:""
+    },
+
+    breakdown: {
+        technicalAccuracy: { type: Number, default: 75 },
+        communicationClarity: { type: Number, default: 75 },
+        problemSolving: { type: Number, default: 75 }
     },
     iscomplete: {
         type: Boolean,
         default: false
     },
+
     createdAt: {
         type:Date,
         default:Date.now
