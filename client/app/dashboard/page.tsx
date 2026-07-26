@@ -6,20 +6,12 @@ import { useAuth } from '@/context/Authcontext';
 import axiosInstance from '@/lib/axios';
 import { ResumeAnalysisSection } from '@/components/resume/ResumeAnalysisSection';
 
-interface interview {
+interface Interview {
     id: string;
     date: string;
     duration: number;
     score: string | number;
     topic: string;
-}
-
-interface ResumeAnalysis {
-    summary: string;
-    strength: string[];
-    recommendation: { label: string; reason: string; confidence: number }[];
-    experienceLevel: "junior" | "mid" | "senior";
-    skillsDetected: string[];
 }
 
 interface DomainOption {
@@ -31,112 +23,58 @@ interface DomainOption {
 }
 
 const domainsList: DomainOption[] = [
-    {
-        id: 'javascript-node',
-        title: 'JavaScript/Node.js',
-        description: 'ES6+, async, Node runtime',
-        iconBg: 'bg-yellow-400 text-black font-extrabold',
-        icon: 'JS',
-    },
-    {
-        id: 'react',
-        title: 'React',
-        description: 'Hooks, state, lifecycle',
-        iconBg: 'bg-purple-100 text-purple-600',
-        icon: '⚛️',
-    },
-    {
-        id: 'python',
-        title: 'Python',
-        description: 'OOP, data structures, stdlib',
-        iconBg: 'bg-green-100 text-green-700',
-        icon: '🐍',
-    },
-    {
-        id: 'data-science',
-        title: 'Data Science',
-        description: 'ML, pandas, statistics',
-        iconBg: 'bg-blue-100 text-blue-600',
-        icon: '📊',
-    },
-    {
-        id: 'devops',
-        title: 'DevOps',
-        description: 'CI/CD, Docker, Kubernetes',
-        iconBg: 'bg-gray-100 text-gray-700',
-        icon: '⚙️',
-    },
-    {
-        id: 'system-design',
-        title: 'System Design',
-        description: 'Scalability, architecture',
-        iconBg: 'bg-amber-100 text-amber-700',
-        icon: '🏗️',
-    },
-    {
-        id: 'database-design',
-        title: 'Database Design',
-        description: 'SQL, NoSQL, indexing',
-        iconBg: 'bg-emerald-100 text-emerald-700',
-        icon: '🗄️',
-    },
-    {
-        id: 'general',
-        title: 'General',
-        description: 'Behavioural & fundamentals',
-        iconBg: 'bg-orange-100 text-orange-600',
-        icon: '🎯',
-    },
+    { id: 'javascript-node', title: 'JavaScript/Node.js', description: 'ES6+, async, Node runtime', iconBg: 'bg-yellow-400 text-black font-extrabold', icon: 'JS' },
+    { id: 'react', title: 'React', description: 'Hooks, state, lifecycle', iconBg: 'bg-purple-100 text-purple-600', icon: '⚛️' },
+    { id: 'python', title: 'Python', description: 'OOP, data structures, stdlib', iconBg: 'bg-green-100 text-green-700', icon: '🐍' },
+    { id: 'data-science', title: 'Data Science', description: 'ML, pandas, statistics', iconBg: 'bg-blue-100 text-blue-600', icon: '📊' },
+    { id: 'devops', title: 'DevOps', description: 'CI/CD, Docker, Kubernetes', iconBg: 'bg-gray-100 text-gray-700', icon: '⚙️' },
+    { id: 'system-design', title: 'System Design', description: 'Scalability, architecture', iconBg: 'bg-amber-100 text-amber-700', icon: '🏗️' },
+    { id: 'database-design', title: 'Database Design', description: 'SQL, NoSQL, indexing', iconBg: 'bg-emerald-100 text-emerald-700', icon: '🗄️' },
+    { id: 'general', title: 'General', description: 'Behavioural & fundamentals', iconBg: 'bg-orange-100 text-orange-600', icon: '🎯' },
 ];
 
 const Page = () => {
     const router = useRouter();
     const { isLoggedIn, isLoading: authLoading, user } = useAuth();
-    const [interviews, setInterviews] = useState<interview[]>([]);
+    const [interviews, setInterviews] = useState<Interview[]>([]);
     const [filterDomain, setFilterDomain] = useState<string>("All");
     const [activeTab, setActiveTab] = useState<'history' | 'resume'>('history');
     const [isDomainModalOpen, setIsDomainModalOpen] = useState<boolean>(false);
+    const [selectedDetail, setSelectedDetail] = useState<Interview | null>(null);
 
-    useEffect(() => {
-        // Redirect if auth check is done and user is not logged in
-        if (!authLoading && !isLoggedIn) {
-            router.push('/login');
-        }
-    }, [authLoading, isLoggedIn, router]);
-
-    // Fetch interviews from backend API & localStorage fallback
     useEffect(() => {
         const fetchHistory = async () => {
             try {
-                const res = await axiosInstance.get('/api/interview');
-                const data = res.data;
-                if (data.success && Array.isArray(data.interviews) && data.interviews.length > 0) {
-                    setInterviews(data.interviews);
-                    localStorage.setItem('ai_interview_history', JSON.stringify(data.interviews));
+                const response = await axiosInstance.get('/api/interview');
+                if (response.data?.success && Array.isArray(response.data.interviews) && response.data.interviews.length > 0) {
+                    const formatted = response.data.interviews.map((item: any) => ({
+                        id: item._id || item.id,
+                        topic: item.domain || item.topic || "JavaScript/Node.js",
+                        date: new Date(item.createdAt || Date.now()).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }),
+                        duration: item.duration || 2,
+                        score: typeof item.score !== 'undefined' ? item.score : 85,
+                    }));
+                    setInterviews(formatted);
                     return;
                 }
-            } catch (e) {
-                console.warn("Backend fetch failed, using local storage fallback:", e);
+            } catch (err) {
+                console.warn("Backend interview history fetch error, using local storage fallback:", err);
             }
 
-            // Fallback to localStorage if backend returns empty or offline
             try {
                 const stored = localStorage.getItem('ai_interview_history');
                 if (stored) {
                     setInterviews(JSON.parse(stored));
                 } else {
-                    const initialSession: interview[] = [
-                        {
-                            id: 'session-default-1',
-                            topic: 'JavaScript/Node.js',
-                            date: '31 May 2026',
-                            duration: 2,
-                            score: 85,
-                        }
-                    ];
+                    const initialSession: Interview[] = [{
+                        id: 'session-default-1',
+                        topic: 'JavaScript/Node.js',
+                        date: '31 May 2026',
+                        duration: 2,
+                        score: 85,
+                    }];
                     setInterviews(initialSession);
                     localStorage.setItem('ai_interview_history', JSON.stringify(initialSession));
-
                 }
             } catch (err) {
                 console.error("Local storage error:", err);
@@ -151,7 +89,7 @@ const Page = () => {
     if (authLoading) {
         return (
             <div className="flex items-center justify-center min-h-screen">
-                <p className="text-lg font-medium text-gray-600">Loading auth state...</p>
+                <p className="text-sm font-medium text-gray-500">Loading profile authentication...</p>
             </div>
         );
     }
@@ -160,245 +98,170 @@ const Page = () => {
         return null;
     }
 
+    const uniqueDomains = ["All", ...Array.from(new Set(interviews.map((item) => item.topic)))];
+
+    const filteredInterviews = filterDomain === "All"
+        ? interviews
+        : interviews.filter((item) => item.topic.toLowerCase().includes(filterDomain.toLowerCase()));
+
     const totalSessions = interviews.length;
 
-    const avgScore = interviews.length
+    const averageScore = totalSessions > 0
         ? Math.round(
-            interviews.reduce((s, i) => s + Number(i.score || 0), 0) / interviews.length,
+            interviews.reduce((acc, curr) => {
+                const num = Number(curr.score) || 75;
+                const normalized = num <= 10 ? num * 10 : num;
+                return acc + normalized;
+            }, 0) / totalSessions
         )
-        : 0;
+        : 85;
 
-    const totalMinutes = interviews.reduce((s, i) => s + (Number(i.duration) || 0), 0);
+    const totalMinutes = interviews.reduce((acc, curr) => acc + (Number(curr.duration) || 0), 0);
 
-    const bestScore = interviews.length
-        ? Math.max(...interviews.map((i) => Number(i.score || 0)))
-        : 0;
-
-    const uniqueDomains = [
-        "All",
-        ...Array.from(new Set(interviews.map((i) => i.topic)))
-    ];
-
-    const filtered = filterDomain === "All"
-        ? interviews
-        : interviews.filter((i) => i.topic === filterDomain);
-
-    const firstName = user?.username ? user.username.split(' ')[0] : 'Girish';
-
-    // Helper to get domain icon
-    const getDomainIcon = (topic: string) => {
-        const found = domainsList.find(d => topic.toLowerCase().includes(d.title.toLowerCase()) || d.title.toLowerCase().includes(topic.toLowerCase()));
-        return found ? found.icon : '🟨';
-    };
-
-    // Helper to get domain key for router retake
     const getDomainKey = (topic: string) => {
-        const found = domainsList.find(d => topic.toLowerCase().includes(d.title.toLowerCase()) || d.title.toLowerCase().includes(topic.toLowerCase()));
-        return found ? found.id : 'javascript-node';
+        const lower = topic.toLowerCase();
+        if (lower.includes('react')) return 'react';
+        if (lower.includes('python')) return 'python';
+        if (lower.includes('data')) return 'data-science';
+        if (lower.includes('devops')) return 'devops';
+        if (lower.includes('system')) return 'system-design';
+        if (lower.includes('database')) return 'database-design';
+        if (lower.includes('general')) return 'general';
+        return 'javascript-node';
     };
 
     return (
-        <div className="p-6 max-w-7xl mx-auto space-y-8 relative">
-            {/* Top Navigation & Header Section */}
-            <section className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-gray-200/60 pb-6">
-                <div className="space-y-3">
+        <div className="min-h-screen bg-gray-50/60 pb-16 pt-24 font-sans text-gray-800">
+            <main className="max-w-6xl mx-auto px-4 md:px-6 space-y-8">
+                {/* Header Welcome Section */}
+                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white p-6 md:p-8 rounded-3xl border border-gray-200/80 shadow-xs">
+                    <div className="space-y-1">
+                        <span className="text-xs font-bold uppercase tracking-wider text-blue-600 bg-blue-50 px-3 py-1 rounded-full inline-block mb-1">
+                            Candidate Workspace
+                        </span>
+                        <h1 className="text-2xl md:text-3xl font-extrabold text-[#2c2e2a]">
+                            Welcome back, {user?.username || 'Candidate'} 👋
+                        </h1>
+                        <p className="text-sm text-gray-500 font-medium">
+                            Ready to practice tech interviews and level up your engineering skills?
+                        </p>
+                    </div>
+
                     <button
-                        onClick={() => router.push('/')}
-                        className="inline-flex items-center gap-2 px-3.5 py-1.5 bg-white hover:bg-gray-50 border border-gray-200 hover:border-gray-300 text-gray-700 text-xs font-bold rounded-full transition-all shadow-xs active:scale-95 cursor-pointer"
+                        onClick={() => setIsDomainModalOpen(true)}
+                        className="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-full text-sm transition-all shadow-sm hover:shadow-md flex items-center justify-center gap-2 cursor-pointer active:scale-95 shrink-0"
                     >
-                        <span>←</span>
-                        <span>Back to Home</span>
+                        <span>✨ Start New Interview</span>
                     </button>
-                    <div>
-                        <p className="text-gray-500 text-sm flex items-center gap-1">
-                            <span>👏</span> Welcome back, {firstName}
-                        </p>
-                        <h2 className="text-3xl font-extrabold text-[#2c2e2a] tracking-tight">Your Dashboard</h2>
-                    </div>
-                </div>
-                <button
-                    onClick={() => setIsDomainModalOpen(true)}
-                    className="inline-flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-full font-medium shadow-sm transition-all active:scale-95 self-start md:self-auto cursor-pointer"
-                >
-                    <span>⚡</span>
-                    <span>New Interview</span>
-                </button>
-            </section>
-
-            {/* Overview Cards Matching Reference Image Design */}
-            <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                {/* Card 1: Total Sessions */}
-                <div className="bg-white p-6 rounded-2xl border border-gray-200/80 shadow-xs flex flex-col justify-between space-y-4">
-                    <div className="flex justify-between items-center text-xs font-semibold text-gray-400">
-                        <span>Total Sessions</span>
-                        <span className="text-base">📋</span>
-                    </div>
-                    <div>
-                        <p className="text-3xl font-extrabold text-[#2c2e2a]">{totalSessions}</p>
-                        <p className="text-xs text-gray-400 font-medium mt-1">
-                            {totalSessions} {totalSessions === 1 ? 'session' : 'sessions'}
-                        </p>
-                    </div>
                 </div>
 
-                {/* Card 2: Average Score */}
-                <div className="bg-blue-50/40 p-6 rounded-2xl border border-blue-100 shadow-xs flex flex-col justify-between space-y-4">
-                    <div className="flex justify-between items-center text-xs font-semibold text-gray-400">
-                        <span>Average Score</span>
-                        <span className="text-base">📊</span>
+                {/* Performance Stats Cards */}
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div className="bg-white p-6 rounded-2xl border border-gray-200/80 shadow-xs flex items-center justify-between">
+                        <div className="space-y-1">
+                            <span className="text-xs font-semibold text-gray-400">Total Interviews</span>
+                            <h3 className="text-2xl font-black text-[#2c2e2a]">{totalSessions}</h3>
+                        </div>
+                        <div className="w-12 h-12 bg-blue-50 text-blue-600 rounded-2xl flex items-center justify-center font-bold text-xl">
+                            🎯
+                        </div>
                     </div>
-                    <div>
-                        <p className="text-3xl font-extrabold text-blue-600">{avgScore}%</p>
-                        <p className="text-xs text-gray-500 font-medium mt-1 flex items-center gap-1">
-                            Keep going 🦾
-                        </p>
+
+                    <div className="bg-white p-6 rounded-2xl border border-gray-200/80 shadow-xs flex items-center justify-between">
+                        <div className="space-y-1">
+                            <span className="text-xs font-semibold text-gray-400">Average Performance</span>
+                            <h3 className="text-2xl font-black text-[#2c2e2a]">{averageScore}%</h3>
+                        </div>
+                        <div className="w-12 h-12 bg-emerald-50 text-emerald-600 rounded-2xl flex items-center justify-center font-bold text-xl">
+                            📈
+                        </div>
+                    </div>
+
+                    <div className="bg-white p-6 rounded-2xl border border-gray-200/80 shadow-xs flex items-center justify-between">
+                        <div className="space-y-1">
+                            <span className="text-xs font-semibold text-gray-400">Practice Time</span>
+                            <h3 className="text-2xl font-black text-[#2c2e2a]">{totalMinutes} mins</h3>
+                        </div>
+                        <div className="w-12 h-12 bg-purple-50 text-purple-600 rounded-2xl flex items-center justify-center font-bold text-xl">
+                            ⏱
+                        </div>
                     </div>
                 </div>
 
-                {/* Card 3: Best Score */}
-                <div className="bg-white p-6 rounded-2xl border border-gray-200/80 shadow-xs flex flex-col justify-between space-y-4">
-                    <div className="flex justify-between items-center text-xs font-semibold text-gray-400">
-                        <span>Best Score</span>
-                        <span className="text-base">🏆</span>
-                    </div>
-                    <div>
-                        <p className="text-3xl font-extrabold text-[#2c2e2a]">{bestScore}%</p>
-                        <p className="text-xs text-gray-400 font-medium mt-1">Personal best</p>
-                    </div>
-                </div>
-
-                {/* Card 4: Practice Time */}
-                <div className="bg-white p-6 rounded-2xl border border-gray-200/80 shadow-xs flex flex-col justify-between space-y-4">
-                    <div className="flex justify-between items-center text-xs font-semibold text-gray-400">
-                        <span>Practice Time</span>
-                        <span className="text-base">⏱</span>
-                    </div>
-                    <div>
-                        <p className="text-3xl font-extrabold text-[#2c2e2a]">{totalMinutes}m</p>
-                        <p className="text-xs text-gray-400 font-medium mt-1">Total invested</p>
-                    </div>
-                </div>
-            </section>
-
-            {/* Tabs & History Section */}
-            <section className="space-y-6">
-                {/* Tabs Header */}
-                <div className="border-b border-gray-200 flex gap-8">
+                {/* Tab Navigation */}
+                <div className="flex border-b border-gray-200">
                     <button
                         onClick={() => setActiveTab('history')}
-                        className={`pb-3 text-sm font-semibold flex items-center gap-2 transition-colors relative ${
+                        className={`pb-3 px-4 text-sm font-bold border-b-2 transition-all cursor-pointer ${
                             activeTab === 'history'
-                                ? 'text-blue-600 border-b-2 border-blue-600'
-                                : 'text-gray-500 hover:text-gray-800'
+                                ? 'border-blue-600 text-blue-600'
+                                : 'border-transparent text-gray-400 hover:text-gray-700'
                         }`}
                     >
-                        <span>📋</span> Interview History
+                        Interview History
                     </button>
                     <button
                         onClick={() => setActiveTab('resume')}
-                        className={`pb-3 text-sm font-semibold flex items-center gap-2 transition-colors relative ${
+                        className={`pb-3 px-4 text-sm font-bold border-b-2 transition-all cursor-pointer ${
                             activeTab === 'resume'
-                                ? 'text-blue-600 border-b-2 border-blue-600'
-                                : 'text-gray-500 hover:text-gray-800'
+                                ? 'border-blue-600 text-blue-600'
+                                : 'border-transparent text-gray-400 hover:text-gray-700'
                         }`}
                     >
-                        <span>📄</span> Resume Analysis
+                        Resume Analysis 📄
                     </button>
                 </div>
 
-                {/* Filter & Subtitle Row */}
-                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-                    <p className="text-sm text-gray-500">
-                        {activeTab === 'history'
-                            ? 'Your recent practice sessions'
-                            : 'Your uploaded resume analysis & insights'}
-                    </p>
-
-                    {/* Domain Filter Pills */}
-                    {activeTab === 'history' && uniqueDomains.length > 0 && (
-                        <div className="flex flex-wrap gap-2">
-                            {uniqueDomains.map((domain) => {
-                                const isSelected = filterDomain === domain;
-                                return (
-                                    <button
-                                        key={domain}
-                                        onClick={() => setFilterDomain(domain)}
-                                        className={`px-4 py-1.5 rounded-full text-xs font-semibold transition-all ${
-                                            isSelected
-                                                ? 'bg-blue-600 text-white shadow-xs'
-                                                : 'bg-white hover:bg-gray-50 text-gray-600 border border-gray-200'
-                                        }`}
-                                    >
-                                        {domain}
-                                    </button>
-                                );
-                            })}
-                        </div>
-                    )}
-                </div>
-
-                {/* Tab Content: Interview History List */}
+                {/* Tab 1: Interview History */}
                 {activeTab === 'history' && (
-                    <div className="space-y-3">
-                        {filtered.length === 0 ? (
-                            /* Empty State */
-                            <div className="border-2 border-dashed border-gray-200 rounded-3xl p-12 text-center bg-gray-50/30 flex flex-col items-center justify-center space-y-4">
-                                <div className="w-16 h-16 bg-amber-50 rounded-2xl flex items-center justify-center text-3xl shadow-sm border border-amber-100">
-                                    📝
-                                </div>
-                                <div className="space-y-1">
-                                    <h4 className="text-xl font-bold text-[#2c2e2a]">No sessions yet</h4>
-                                    <p className="text-sm text-gray-500 max-w-md mx-auto">
-                                        Start a practice interview or upload your resume for personalised domain suggestions.
-                                    </p>
-                                </div>
-                                <div className="flex flex-wrap items-center justify-center gap-3 pt-2">
-                                    <button
-                                        onClick={() => setIsDomainModalOpen(true)}
-                                        className="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-medium px-6 py-2.5 rounded-full shadow-sm text-sm transition-all active:scale-95"
-                                    >
-                                        <span>⚡</span> Start Interview
-                                    </button>
-                                    <button
-                                        onClick={() => router.push('/resume')}
-                                        className="inline-flex items-center gap-2 bg-white hover:bg-gray-50 text-gray-700 font-medium px-6 py-2.5 rounded-full border border-gray-300 shadow-sm text-sm transition-all active:scale-95"
-                                    >
-                                        <span>📄</span> Analyse Resume
-                                    </button>
-                                </div>
+                    <div className="space-y-4">
+                        {/* Domain Filter Bar */}
+                        <div className="flex flex-wrap items-center gap-2 pb-2">
+                            <span className="text-xs font-bold text-gray-400 mr-2">Filter:</span>
+                            {uniqueDomains.map((domain) => (
+                                <button
+                                    key={domain}
+                                    onClick={() => setFilterDomain(domain)}
+                                    className={`px-3 py-1.5 rounded-full text-xs font-bold transition-all cursor-pointer ${
+                                        filterDomain === domain
+                                            ? 'bg-blue-600 text-white shadow-xs'
+                                            : 'bg-white border border-gray-200 text-gray-600 hover:bg-gray-100'
+                                    }`}
+                                >
+                                    {domain}
+                                </button>
+                            ))}
+                        </div>
+
+                        {filteredInterviews.length === 0 ? (
+                            <div className="bg-white rounded-3xl p-12 text-center border border-gray-200/80 space-y-3">
+                                <div className="text-4xl">📝</div>
+                                <h3 className="text-lg font-bold text-gray-800">No interviews found</h3>
+                                <p className="text-xs text-gray-400 max-w-sm mx-auto">
+                                    You haven't completed any sessions in this category yet. Start a new mock interview to practice!
+                                </p>
                             </div>
                         ) : (
-                            /* History List Item Cards */
                             <div className="space-y-3">
-                                {filtered.map((item) => {
-                                    const itemScore = Number(item.score || 10);
+                                {filteredInterviews.map((item) => {
+                                    const itemScoreRaw = Number(item.score) || 75;
+                                    const itemScore = itemScoreRaw <= 10 ? itemScoreRaw * 10 : Math.min(100, Math.max(0, itemScoreRaw));
+
                                     return (
                                         <div
                                             key={item.id}
-                                            className="bg-white p-5 rounded-2xl border border-gray-200/80 shadow-xs hover:shadow-md transition-all flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4"
+                                            className="bg-white p-5 rounded-2xl border border-gray-200/80 shadow-xs flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 hover:border-blue-200 transition-all"
                                         >
-                                            {/* Left Info */}
-                                            <div className="flex items-center gap-4">
-                                                <div className="w-12 h-12 rounded-xl bg-yellow-400 text-black flex items-center justify-center font-bold text-lg shadow-xs shrink-0">
-                                                    {getDomainIcon(item.topic)}
+                                            <div className="space-y-1">
+                                                <div className="flex items-center gap-2">
+                                                    <h4 className="font-bold text-[#2c2e2a] text-base">{item.topic}</h4>
+                                                    <span className="text-[10px] font-bold text-gray-400 bg-gray-100 px-2 py-0.5 rounded-full">
+                                                        {item.date}
+                                                    </span>
                                                 </div>
-                                                <div className="space-y-1">
-                                                    <div className="flex items-center gap-2.5">
-                                                        <h4 className="font-bold text-[#2c2e2a] text-base">{item.topic}</h4>
-                                                        <span className="inline-flex items-center gap-1 bg-orange-50 text-orange-600 border border-orange-100 text-xs font-bold px-2.5 py-0.5 rounded-full">
-                                                            <span className="w-2 h-2 rounded-full bg-orange-500"></span>
-                                                            {itemScore}%
-                                                        </span>
-                                                    </div>
-                                                    <div className="flex items-center gap-3 text-xs text-gray-400 font-medium">
-                                                        <span>📅 {item.date}</span>
-                                                        <span>•</span>
-                                                        <span>⏱ {item.duration} min</span>
-                                                    </div>
-                                                </div>
+                                                <p className="text-xs text-gray-400">Duration: {item.duration} mins • 3 Questions</p>
                                             </div>
 
-                                            {/* Right Action & Score Bar */}
                                             <div className="flex items-center gap-4 w-full sm:w-auto justify-between sm:justify-end border-t sm:border-t-0 pt-3 sm:pt-0">
                                                 <div className="flex flex-col items-end gap-1 min-w-[100px]">
                                                     <span className="text-[11px] font-semibold text-gray-400">Score</span>
@@ -406,23 +269,23 @@ const Page = () => {
                                                         <div className="w-20 bg-gray-100 h-2 rounded-full overflow-hidden">
                                                             <div
                                                                 className="bg-blue-600 h-full rounded-full"
-                                                                style={{ width: `${itemScore <= 10 ? itemScore * 10 : Math.min(100, Math.max(0, itemScore))}%` }}
+                                                                style={{ width: `${itemScore}%` }}
                                                             />
                                                         </div>
-                                                        <span className="text-xs font-bold text-[#2c2e2a]">{itemScore <= 10 ? itemScore * 10 : itemScore}%</span>
-
+                                                        <span className="text-xs font-bold text-[#2c2e2a]">{itemScore}%</span>
                                                     </div>
                                                 </div>
+
                                                 <div className="flex items-center gap-2">
                                                     <button
-                                                        onClick={() => alert(`Details for ${item.topic}: Score ${itemScore}%, Duration ${item.duration} mins.`)}
-                                                        className="px-4 py-2 text-xs font-semibold text-gray-700 hover:text-gray-900 bg-white hover:bg-gray-50 border border-gray-200 rounded-full transition-colors shadow-xs"
+                                                        onClick={() => setSelectedDetail(item)}
+                                                        className="px-4 py-2 text-xs font-semibold text-gray-700 hover:text-gray-900 bg-white hover:bg-gray-50 border border-gray-200 rounded-full transition-colors shadow-xs cursor-pointer"
                                                     >
                                                         Details
                                                     </button>
                                                     <button
                                                         onClick={() => router.push(`/interview?domain=${getDomainKey(item.topic)}`)}
-                                                        className="px-5 py-2 text-xs font-semibold text-white bg-blue-600 hover:bg-blue-700 rounded-full transition-all shadow-sm active:scale-95"
+                                                        className="px-5 py-2 text-xs font-semibold text-white bg-blue-600 hover:bg-blue-700 rounded-full transition-all shadow-sm active:scale-95 cursor-pointer"
                                                     >
                                                         Retake
                                                     </button>
@@ -436,17 +299,14 @@ const Page = () => {
                     </div>
                 )}
 
-                {/* Tab Content: Resume Analysis */}
-                {activeTab === 'resume' && (
-                    <ResumeAnalysisSection />
-                )}
-            </section>
+                {/* Tab 2: Resume Analysis */}
+                {activeTab === 'resume' && <ResumeAnalysisSection />}
+            </main>
 
-            {/* Modal: Pick a Domain (Matching Reference Image) */}
+            {/* Modal: Pick a Domain */}
             {isDomainModalOpen && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
                     <div className="bg-white w-full max-w-xl rounded-3xl p-6 md:p-8 shadow-2xl space-y-6 relative border border-gray-100 animate-in fade-in zoom-in duration-200">
-                        {/* Header */}
                         <div className="flex items-start justify-between">
                             <div>
                                 <h3 className="text-2xl font-bold text-gray-900">Pick a Domain</h3>
@@ -454,13 +314,12 @@ const Page = () => {
                             </div>
                             <button
                                 onClick={() => setIsDomainModalOpen(false)}
-                                className="w-8 h-8 rounded-full bg-gray-100 hover:bg-gray-200 text-gray-500 hover:text-gray-800 flex items-center justify-center transition-colors text-sm font-bold"
+                                className="w-8 h-8 rounded-full bg-gray-100 hover:bg-gray-200 text-gray-500 hover:text-gray-800 flex items-center justify-center transition-colors text-sm font-bold cursor-pointer"
                             >
                                 ✕
                             </button>
                         </div>
 
-                        {/* Domains Grid */}
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                             {domainsList.map((domain) => (
                                 <div
@@ -488,16 +347,47 @@ const Page = () => {
                                 </div>
                             ))}
                         </div>
+                    </div>
+                </div>
+            )}
 
-                        {/* Footer */}
-                        <div className="text-center pt-2">
+            {/* Modal: Interview Session Detail Modal */}
+            {selectedDetail && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
+                    <div className="bg-white w-full max-w-md rounded-3xl p-6 shadow-2xl space-y-4 relative border border-gray-100 animate-in zoom-in-95 duration-200">
+                        <div className="flex justify-between items-center pb-2 border-b border-gray-100">
+                            <h3 className="font-bold text-gray-900 text-lg">Interview Details</h3>
                             <button
-                                onClick={() => setIsDomainModalOpen(false)}
-                                className="text-sm font-medium text-gray-500 hover:text-gray-800 transition-colors"
+                                onClick={() => setSelectedDetail(null)}
+                                className="w-8 h-8 rounded-full bg-gray-100 hover:bg-gray-200 text-gray-500 flex items-center justify-center font-bold text-sm cursor-pointer"
                             >
-                                Cancel
+                                ✕
                             </button>
                         </div>
+                        <div className="space-y-3 text-sm">
+                            <div className="flex justify-between py-1 border-b border-gray-50">
+                                <span className="text-gray-500">Domain</span>
+                                <span className="font-bold text-gray-800">{selectedDetail.topic}</span>
+                            </div>
+                            <div className="flex justify-between py-1 border-b border-gray-50">
+                                <span className="text-gray-500">Date Completed</span>
+                                <span className="font-bold text-gray-800">{selectedDetail.date}</span>
+                            </div>
+                            <div className="flex justify-between py-1 border-b border-gray-50">
+                                <span className="text-gray-500">Duration</span>
+                                <span className="font-bold text-gray-800">{selectedDetail.duration} minutes</span>
+                            </div>
+                            <div className="flex justify-between py-1">
+                                <span className="text-gray-500">Overall AI Score</span>
+                                <span className="font-bold text-blue-600">{Number(selectedDetail.score) <= 10 ? Number(selectedDetail.score) * 10 : selectedDetail.score}%</span>
+                            </div>
+                        </div>
+                        <button
+                            onClick={() => setSelectedDetail(null)}
+                            className="w-full py-2.5 bg-blue-600 text-white font-bold text-xs rounded-full cursor-pointer hover:bg-blue-700 transition-colors"
+                        >
+                            Close
+                        </button>
                     </div>
                 </div>
             )}
