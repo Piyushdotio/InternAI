@@ -2,9 +2,11 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { useAuth } from '@/context/Authcontext';
 import axiosInstance from '@/lib/axios';
 import { ResumeAnalysisSection } from '@/components/resume/ResumeAnalysisSection';
+
 
 interface Interview {
     id: string;
@@ -132,9 +134,20 @@ const Page = () => {
 
     return (
         <div className="min-h-screen bg-gray-50/60 pb-16 pt-24 font-sans text-gray-800">
-            <main className="max-w-6xl mx-auto px-4 md:px-6 space-y-8">
+            <main className="max-w-6xl mx-auto px-4 md:px-6 space-y-6">
+                {/* Back to Home Button */}
+                <div className="flex items-center justify-between">
+                    <Link
+                        href="/"
+                        className="inline-flex items-center gap-2 px-4 py-2 text-xs font-bold text-[#2c2e2a] bg-white border-2 border-[#2c2e2a] rounded-[50px] hover:bg-[#f5f1e4] transition-all shadow-xs cursor-pointer active:scale-95"
+                    >
+                        <span>← Back to Home</span>
+                    </Link>
+                </div>
+
                 {/* Header Welcome Section */}
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white p-6 md:p-8 rounded-3xl border border-gray-200/80 shadow-xs">
+
                     <div className="space-y-1">
                         <span className="text-xs font-bold uppercase tracking-wider text-blue-600 bg-blue-50 px-3 py-1 rounded-full inline-block mb-1">
                             Candidate Workspace
