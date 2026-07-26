@@ -171,10 +171,14 @@ const InterviewSessionContent = () => {
         return () => clearInterval(interval);
     }, [isCompleted]);
 
-    // Auto scroll chat to bottom
+    // Auto scroll chat to bottom with DOM render delay
     useEffect(() => {
-        chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+        const timer = setTimeout(() => {
+            chatEndRef.current?.scrollIntoView({ behavior: 'smooth', block: 'end' });
+        }, 120);
+        return () => clearTimeout(timer);
     }, [messages, isLoading]);
+
 
     // Save completed session to Backend Database & localStorage
     const saveInterviewToBackend = async (domainTitle: string, durationSecs: number, scoreVal: number, finalMessages: Message[]) => {
@@ -310,7 +314,6 @@ const InterviewSessionContent = () => {
         }, 1200);
     };
 
-
     const handleExit = () => {
         if (confirm("Are you sure you want to exit the current interview session?")) {
             router.push('/dashboard');
@@ -318,7 +321,7 @@ const InterviewSessionContent = () => {
     };
 
     return (
-        <div className="min-h-screen bg-gray-50/50 flex flex-col justify-between">
+        <div className="min-h-screen bg-gray-50/50 flex flex-col justify-between overflow-y-auto">
             {/* Scalable Header */}
             <InterviewHeader
                 domainTitle={domain.title}
@@ -333,7 +336,7 @@ const InterviewSessionContent = () => {
             />
 
             {/* Content Body */}
-            <main className="flex-1 max-w-4xl w-full mx-auto p-4 md:p-6 pb-32 space-y-4">
+            <main className="flex-1 max-w-4xl w-full mx-auto p-4 md:p-6 pb-52 md:pb-64 space-y-4">
                 {!isCompleted ? (
                     <>
                         {messages.map((msg) => (
@@ -349,7 +352,7 @@ const InterviewSessionContent = () => {
                                 </div>
                             </div>
                         )}
-                        <div ref={chatEndRef} />
+                        <div ref={chatEndRef} className="h-16 w-full shrink-0" />
                     </>
                 ) : (
                     /* Interview Completion Feedback View (Exact Reference Image match) */
@@ -391,6 +394,7 @@ const InterviewSessionContent = () => {
         </div>
     );
 };
+
 
 const Page = () => {
     return (

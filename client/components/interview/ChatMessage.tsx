@@ -27,12 +27,23 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({ message }) => {
                     isUserAnswer
                         ? 'bg-blue-600 text-white rounded-br-none shadow-sm'
                         : message.type === 'feedback'
-                        ? 'bg-gray-100/90 text-gray-800 border border-gray-200/60 rounded-bl-none font-sans'
-                        : 'bg-gray-100 text-gray-800 rounded-bl-none font-sans font-normal'
+                        ? 'bg-amber-50/60 text-gray-800 border border-amber-200/60 rounded-bl-none'
+                        : 'bg-white text-gray-900 border border-blue-100 shadow-sm rounded-bl-none font-medium'
                 }`}
             >
+                {message.type === 'question' && (
+                    <div className="flex items-center gap-1.5 text-xs font-bold text-blue-600 mb-1.5">
+                        <span>🤖 Question</span>
+                    </div>
+                )}
+                {message.type === 'feedback' && (
+                    <div className="flex items-center gap-1.5 text-xs font-bold text-amber-700 mb-1.5">
+                        <span>💡 Feedback</span>
+                    </div>
+                )}
                 {message.text}
             </div>
         </div>
     );
 };
+
