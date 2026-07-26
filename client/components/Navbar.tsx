@@ -87,7 +87,7 @@ const Navbar = () => {
                     {/* Right Actions */}
                     <div className="flex items-center gap-3">
                         
-                        {!isLoggedIn ? (
+                        {(!isLoggedIn || !user) ? (
                             <div className="hidden md:flex items-center gap-3">
                                 <Link 
                                     href="/login" 
@@ -111,10 +111,10 @@ const Navbar = () => {
                                     onClick={() => setIsProfileOpen(!isProfileOpen)}
                                     className="flex items-center gap-2 pl-3 pr-2 py-1.5 rounded-[50px] border-2 border-[#2c2e2a] hover:bg-[#f5f1e4] transition-all cursor-pointer"
                                 >
-                                    <span className="text-xs font-bold text-[#2c2e2a] max-w-[80px] truncate">{user?.username || 'User'}</span>
+                                    <span className="text-xs font-bold text-[#2c2e2a] max-w-[80px] truncate">{user.username}</span>
                                     <div className="w-7 h-7 rounded-full overflow-hidden border border-[#2c2e2a] bg-[#8ed462]">
                                         <div className="w-full h-full flex items-center justify-center font-bold text-xs text-[#2c2e2a]">
-                                            {user?.username?.[0]?.toUpperCase() || 'U'}
+                                            {user.username[0]?.toUpperCase()}
                                         </div>
                                     </div>
                                 </button>
@@ -122,8 +122,8 @@ const Navbar = () => {
                                 {isProfileOpen && (
                                     <div className="absolute right-0 mt-3 w-56 bg-white border-2 border-[#2c2e2a] shadow-md rounded-[20px] py-2 z-50">
                                         <div className="px-4 py-3 border-b border-[#2c2e2a]/10 bg-[#f5f1e4]/50">
-                                            <p className="text-xs font-bold text-[#2c2e2a] truncate">{user?.username || 'User'}</p>
-                                            <p className="text-[11px] text-[#80827f] truncate">{user?.email || 'user@aiinterviewer.com'}</p>
+                                            <p className="text-xs font-bold text-[#2c2e2a] truncate">{user.username}</p>
+                                            <p className="text-[11px] text-[#80827f] truncate">{user.email}</p>
                                         </div>
                                         <div className="p-1.5 space-y-1">
                                             <Link 
@@ -136,8 +136,8 @@ const Navbar = () => {
                                             </Link>
                                             <button 
                                                 onClick={() => {
-                                                    logout();
                                                     setIsProfileOpen(false);
+                                                    logout();
                                                 }}
                                                 className="w-full flex items-center gap-2.5 px-3 py-2 text-xs font-bold text-red-500 hover:bg-red-50 rounded-[10px] transition-colors text-left cursor-pointer"
                                             >
@@ -149,6 +149,7 @@ const Navbar = () => {
                                 )}
                             </div>
                         )}
+
 
                         {/* Mobile Menu Toggle Button */}
                         <button 
@@ -217,8 +218,10 @@ const Navbar = () => {
                     </nav>
 
                     <div className="pt-4 border-t border-[#2c2e2a]/10 flex flex-col gap-2.5">
-                        {!isLoggedIn ? (
+                        {!isLoggedIn || !user ? (
                             <>
+
+
                                 <Link 
                                     href="/login" 
                                     onClick={() => setIsMobileMenuOpen(false)}

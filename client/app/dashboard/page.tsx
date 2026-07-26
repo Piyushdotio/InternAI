@@ -140,8 +140,9 @@ const Page = () => {
                             Candidate Workspace
                         </span>
                         <h1 className="text-2xl md:text-3xl font-extrabold text-[#2c2e2a]">
-                            Welcome back, {user?.username || 'Candidate'} 👋
+                            Welcome back, {user?.username} 👋
                         </h1>
+
                         <p className="text-sm text-gray-500 font-medium">
                             Ready to practice tech interviews and level up your engineering skills?
                         </p>

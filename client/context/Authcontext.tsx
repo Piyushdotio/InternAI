@@ -99,9 +99,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const logout = useCallback(() => {
         setTokenState(null);
         setUser(null);
+        setIsLoggedIn(false);
         clearAuth();
-        router.push("/")
+        router.push("/");
     }, [router]);
+
 
     const refreshUser = useCallback(async () => {
         try {
