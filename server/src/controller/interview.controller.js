@@ -150,6 +150,15 @@ const submitAnswer = async (req, res) => {
                 problemSolving: 75
             };
 
+            const normalizeScore = (val, fallback = 75) => {
+                const num = Number(val);
+                if (isNaN(num) || num <= 0) return fallback;
+                if (num <= 10) {
+                    return Math.round(num * 10); // Converts 8 -> 80%, 9 -> 90%, 10 -> 100%
+                }
+                return Math.min(100, Math.max(25, Math.round(num)));
+            };
+
             if (groq) {
                 try {
                     const transcriptText = interview.messages
@@ -157,15 +166,15 @@ const submitAnswer = async (req, res) => {
                         .join("\n");
 
                     const evalPrompt = `
-You are an expert technical interviewer evaluating a mock candidate interview in domain "${domain}".
+You are a senior technical interviewer evaluating a candidate for domain "${domain}".
 Analyze the candidate's answers in the transcript below:
 
 """
 ${transcriptText}
 """
 
-Evaluate the candidate's performance objectively out of 100 based on technical accuracy, clarity, and depth.
-Respond ONLY with a valid JSON object matching this exact structure (no markdown formatting or extra text):
+Provide an objective evaluation as percentages from 25 to 100 (e.g., 85 for 85%).
+Respond ONLY with a valid JSON object matching this exact structure:
 {
   "score": 82,
   "technicalAccuracy": 85,
@@ -186,16 +195,14 @@ Respond ONLY with a valid JSON object matching this exact structure (no markdown
                     const jsonMatch = rawEval.match(/\{[\s\S]*\}/);
                     if (jsonMatch) {
                         const parsed = JSON.parse(jsonMatch[0]);
-                        if (typeof parsed.score === "number") {
-                            score = Math.min(100, Math.max(10, Math.round(parsed.score)));
-                        }
+                        score = normalizeScore(parsed.score, 75);
                         if (parsed.feedback) {
                             feedbackSummary = parsed.feedback;
                         }
                         breakdown = {
-                            technicalAccuracy: typeof parsed.technicalAccuracy === "number" ? Math.round(parsed.technicalAccuracy) : score,
-                            communicationClarity: typeof parsed.communicationClarity === "number" ? Math.round(parsed.communicationClarity) : score,
-                            problemSolving: typeof parsed.problemSolving === "number" ? Math.round(parsed.problemSolving) : score,
+                            technicalAccuracy: normalizeScore(parsed.technicalAccuracy, score),
+                            communicationClarity: normalizeScore(parsed.communicationClarity, score),
+                            problemSolving: normalizeScore(parsed.problemSolving, score),
                         };
                     }
                 } catch (evalErr) {
@@ -210,11 +217,11 @@ Respond ONLY with a valid JSON object matching this exact structure (no markdown
                 const avgWords = userAnswers.length ? totalWords / userAnswers.length : 0;
 
                 if (avgWords < 5) {
-                    score = 35;
+                    score = 40;
                 } else if (avgWords < 15) {
-                    score = 65;
+                    score = 68;
                 } else if (avgWords < 35) {
-                    score = 82;
+                    score = 84;
                 } else {
                     score = 92;
                 }
@@ -225,6 +232,7 @@ Respond ONLY with a valid JSON object matching this exact structure (no markdown
                     problemSolving: Math.max(20, score - 3)
                 };
             }
+
 
             interview.score = score;
             interview.breakdown = breakdown;

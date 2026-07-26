@@ -38,11 +38,12 @@ export const InterviewCompletion: React.FC<InterviewCompletionProps> = ({
     // Calculate SVG circle progress stroke
     const radius = 54;
     const circumference = 2 * Math.PI * radius;
-    // Map score out of 100 or out of 10
-    const displayScorePercentage = score > 10 ? score : (score / 10) * 100;
+    // Map score safely to 0-100 percentage
+    const displayScorePercentage = score <= 10 ? score * 10 : Math.min(100, Math.max(0, score));
     const strokeDashoffset = circumference - (displayScorePercentage / 100) * circumference;
 
     const shortDomainName = domainTitle.split('/')[0].split(' ')[0];
+
 
     return (
         <div className="max-w-md mx-auto my-6 space-y-4 animate-fade-in pb-12">
@@ -84,9 +85,10 @@ export const InterviewCompletion: React.FC<InterviewCompletionProps> = ({
 
                     {/* Score Text in Center */}
                     <div className="absolute flex flex-col items-center justify-center">
-                        <span className="text-3xl font-black text-[#2c2e2a] leading-none">{score}%</span>
+                        <span className="text-3xl font-black text-[#2c2e2a] leading-none">{displayScorePercentage}%</span>
                         <span className="text-[10px] font-bold tracking-wider text-gray-400 uppercase mt-1">SCORE</span>
                     </div>
+
                 </div>
 
 

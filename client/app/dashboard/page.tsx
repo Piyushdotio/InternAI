@@ -131,11 +131,12 @@ const Page = () => {
                             topic: 'JavaScript/Node.js',
                             date: '31 May 2026',
                             duration: 2,
-                            score: 10,
+                            score: 85,
                         }
                     ];
                     setInterviews(initialSession);
                     localStorage.setItem('ai_interview_history', JSON.stringify(initialSession));
+
                 }
             } catch (err) {
                 console.error("Local storage error:", err);
@@ -405,10 +406,11 @@ const Page = () => {
                                                         <div className="w-20 bg-gray-100 h-2 rounded-full overflow-hidden">
                                                             <div
                                                                 className="bg-blue-600 h-full rounded-full"
-                                                                style={{ width: `${itemScore > 10 ? itemScore : (itemScore / 10) * 100}%` }}
+                                                                style={{ width: `${itemScore <= 10 ? itemScore * 10 : Math.min(100, Math.max(0, itemScore))}%` }}
                                                             />
                                                         </div>
-                                                        <span className="text-xs font-bold text-[#2c2e2a]">{itemScore}%</span>
+                                                        <span className="text-xs font-bold text-[#2c2e2a]">{itemScore <= 10 ? itemScore * 10 : itemScore}%</span>
+
                                                     </div>
                                                 </div>
                                                 <div className="flex items-center gap-2">

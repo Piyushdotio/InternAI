@@ -18,6 +18,8 @@ const Navbar = () => {
         { label: "About", href: "#" },
     ];
 
+    const [isAboutOpen, setIsAboutOpen] = useState(false);
+
     // Close profile dropdown when clicking outside
     useEffect(() => {
         const handleClickOutside = (event: MouseEvent) => {
@@ -54,22 +56,32 @@ const Navbar = () => {
 
                     {/* Desktop Navigation Links */}
                     <nav className="hidden md:flex items-center gap-2">
-                        {navigationLinks.map((link) => {
-                            const active = isActive(link.href);
-                            return (
-                                <Link 
-                                    key={link.label}
-                                    href={link.href}
-                                    className={`px-4 py-2 text-sm font-semibold tracking-wide rounded-[50px] transition-all ${
-                                        active 
-                                            ? 'bg-[#e0dbce] text-[#2c2e2a]' 
-                                            : 'text-[#2c2e2a] hover:bg-[#f5f1e4]'
-                                    }`}
-                                >
-                                    {link.label}
-                                </Link>
-                            );
-                        })}
+                        <Link 
+                            href="/"
+                            className={`px-4 py-2 text-sm font-semibold tracking-wide rounded-[50px] transition-all ${
+                                isActive('/') 
+                                    ? 'bg-[#e0dbce] text-[#2c2e2a]' 
+                                    : 'text-[#2c2e2a] hover:bg-[#f5f1e4]'
+                            }`}
+                        >
+                            Home
+                        </Link>
+                        <Link 
+                            href="/dashboard"
+                            className={`px-4 py-2 text-sm font-semibold tracking-wide rounded-[50px] transition-all ${
+                                isActive('/dashboard') 
+                                    ? 'bg-[#e0dbce] text-[#2c2e2a]' 
+                                    : 'text-[#2c2e2a] hover:bg-[#f5f1e4]'
+                            }`}
+                        >
+                            Interview
+                        </Link>
+                        <button
+                            onClick={() => setIsAboutOpen(true)}
+                            className="px-4 py-2 text-sm font-semibold tracking-wide text-[#2c2e2a] hover:bg-[#f5f1e4] rounded-[50px] transition-all cursor-pointer"
+                        >
+                            About
+                        </button>
                     </nav>
 
                     {/* Right Actions */}
@@ -84,7 +96,6 @@ const Navbar = () => {
                                     Login
                                 </Link>
                                 
-                                {/* Pill button with circular icon dot affordance at right edge */}
                                 <Link 
                                     href="/register" 
                                     className="px-5 py-2 text-sm font-bold text-[#2c2e2a] border-2 border-[#2c2e2a] rounded-[50px] hover:bg-[#f5f1e4] transition-all flex items-center gap-2"
@@ -108,12 +119,11 @@ const Navbar = () => {
                                     </div>
                                 </button>
 
-                                {/* Dropdown Menu (White Card, Hairline Border) */}
                                 {isProfileOpen && (
                                     <div className="absolute right-0 mt-3 w-56 bg-white border-2 border-[#2c2e2a] shadow-md rounded-[20px] py-2 z-50">
                                         <div className="px-4 py-3 border-b border-[#2c2e2a]/10 bg-[#f5f1e4]/50">
-                                            <p className="text-xs font-bold text-[#2c2e2a] truncate">{user?.username || 'Alex Rivera'}</p>
-                                            <p className="text-[11px] text-[#80827f] truncate">{user?.email || 'alex@aiinterviewer.com'}</p>
+                                            <p className="text-xs font-bold text-[#2c2e2a] truncate">{user?.username || 'User'}</p>
+                                            <p className="text-[11px] text-[#80827f] truncate">{user?.email || 'user@aiinterviewer.com'}</p>
                                         </div>
                                         <div className="p-1.5 space-y-1">
                                             <Link 
@@ -140,7 +150,7 @@ const Navbar = () => {
                             </div>
                         )}
 
-                        {/* Mobile Menu Toggle Button (Fresh Grass filled circle, 40px diameter) */}
+                        {/* Mobile Menu Toggle Button */}
                         <button 
                             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
                             className="w-10 h-10 bg-[#8ed462] border-2 border-[#2c2e2a] rounded-full flex items-center justify-center text-[#2c2e2a] hover:opacity-90 active:scale-95 transition-all cursor-pointer"
@@ -158,14 +168,13 @@ const Navbar = () => {
                 </div>
             </header>
 
-            {/* Mobile Drawer (Rounded Top Card sliding in) */}
+            {/* Mobile Drawer */}
             <div 
                 className={`fixed inset-x-0 bottom-4 mx-auto w-[92%] max-w-[500px] bg-white border-2 border-[#2c2e2a] rounded-[30px] p-6 shadow-2xl z-[60] transform transition-transform duration-300 ease-out md:hidden ${
                     isMobileMenuOpen ? 'translate-y-0 opacity-100' : 'translate-y-[120%] opacity-0'
                 }`}
             >
                 <div className="flex flex-col gap-4">
-                    {/* Header */}
                     <div className="flex justify-between items-center pb-2 border-b border-[#2c2e2a]/10">
                         <span className="font-extrabold text-md text-[#2c2e2a] flex items-center gap-2">
                             <span className="w-2.5 h-2.5 bg-[#8ed462] rounded-full border border-[#2c2e2a]"></span>
@@ -181,28 +190,32 @@ const Navbar = () => {
                         </button>
                     </div>
 
-                    {/* Navigation list */}
                     <nav className="flex flex-col gap-1.5">
-                        {navigationLinks.map((link) => {
-                            const active = isActive(link.href);
-                            return (
-                                <Link 
-                                    key={link.label}
-                                    href={link.href}
-                                    onClick={() => setIsMobileMenuOpen(false)}
-                                    className={`px-4 py-2.5 rounded-[12px] text-sm font-bold transition-all ${
-                                        active 
-                                            ? 'bg-[#e0dbce] text-[#2c2e2a]' 
-                                            : 'text-[#2c2e2a] hover:bg-[#f5f1e4]'
-                                    }`}
-                                >
-                                    {link.label}
-                                </Link>
-                            );
-                        })}
+                        <Link 
+                            href="/"
+                            onClick={() => setIsMobileMenuOpen(false)}
+                            className="px-4 py-2.5 rounded-[12px] text-sm font-bold text-[#2c2e2a] hover:bg-[#f5f1e4]"
+                        >
+                            Home
+                        </Link>
+                        <Link 
+                            href="/dashboard"
+                            onClick={() => setIsMobileMenuOpen(false)}
+                            className="px-4 py-2.5 rounded-[12px] text-sm font-bold text-[#2c2e2a] hover:bg-[#f5f1e4]"
+                        >
+                            Interview
+                        </Link>
+                        <button 
+                            onClick={() => {
+                                setIsMobileMenuOpen(false);
+                                setIsAboutOpen(true);
+                            }}
+                            className="px-4 py-2.5 rounded-[12px] text-sm font-bold text-[#2c2e2a] hover:bg-[#f5f1e4] text-left cursor-pointer"
+                        >
+                            About
+                        </button>
                     </nav>
 
-                    {/* Actions */}
                     <div className="pt-4 border-t border-[#2c2e2a]/10 flex flex-col gap-2.5">
                         {!isLoggedIn ? (
                             <>
@@ -251,12 +264,94 @@ const Navbar = () => {
                 </div>
             </div>
 
-            {/* Overlay */}
+            {/* Mobile Menu Backdrop */}
             {isMobileMenuOpen && (
                 <div 
                     onClick={() => setIsMobileMenuOpen(false)}
                     className="fixed inset-0 bg-black/25 backdrop-blur-sm z-[55] md:hidden"
                 />
+            )}
+
+            {/* Humanized About Modal (Matching Cream Paper & Storybook Theme) */}
+            {isAboutOpen && (
+                <div className="fixed inset-0 z-[70] flex items-center justify-center p-4">
+                    <div 
+                        onClick={() => setIsAboutOpen(false)} 
+                        className="absolute inset-0 bg-[#2c2e2a]/50 backdrop-blur-sm"
+                    />
+                    <div className="bg-[#f5f1e4] border-4 border-[#2c2e2a] rounded-[36px] w-full max-w-xl relative z-10 overflow-hidden shadow-2xl animate-in zoom-in-95 duration-200">
+                        {/* Header */}
+                        <div className="flex justify-between items-center px-6 py-4 border-b-2 border-[#2c2e2a] bg-white">
+                            <div className="flex items-center gap-2.5">
+                                <div className="w-8 h-8 rounded-lg bg-[#8ed462] border-2 border-[#2c2e2a] flex items-center justify-center text-xs font-black">
+                                    🤖
+                                </div>
+                                <h3 className="font-extrabold text-[#2c2e2a] text-base">About AI Interviewer</h3>
+                            </div>
+                            <button 
+                                onClick={() => setIsAboutOpen(false)}
+                                className="w-8 h-8 rounded-full border-2 border-[#2c2e2a] bg-white text-[#2c2e2a] hover:bg-[#f5f1e4] font-bold text-sm flex items-center justify-center cursor-pointer"
+                            >
+                                ✕
+                            </button>
+                        </div>
+
+                        {/* Modal Content */}
+                        <div className="p-6 md:p-8 space-y-6">
+                            <div className="space-y-2">
+                                <span className="inline-block px-3 py-1 bg-[#8ed462]/30 border border-[#8ed462] rounded-full text-xs font-bold text-[#2c2e2a]">
+                                    Personal Technical Coach 🌿
+                                </span>
+                                <h4 className="text-2xl font-black text-[#2c2e2a] tracking-tight">
+                                    Building Confidence Through Intelligent Practice
+                                </h4>
+                                <p className="text-sm text-[#80827f] leading-relaxed font-medium">
+                                    <strong>AI Interviewer</strong> was created to transform the way developers prepare for tech roles. Instead of static question lists, our platform uses <strong>Groq AI (Llama 3.3)</strong> to conduct live, adaptive mock interviews with real-time feedback, domain analytics, and resume skill mapping.
+                                </p>
+                            </div>
+
+                            {/* Core Pillars Grid */}
+                            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2">
+                                <div className="p-4 bg-white rounded-[20px] border-2 border-[#2c2e2a] space-y-1">
+                                    <span className="text-xl">⚡</span>
+                                    <p className="text-xs font-bold text-[#2c2e2a]">Groq AI Engine</p>
+                                    <p className="text-[11px] text-[#80827f]">Real-time question & feedback generation</p>
+                                </div>
+                                <div className="p-4 bg-white rounded-[20px] border-2 border-[#2c2e2a] space-y-1">
+                                    <span className="text-xl">📄</span>
+                                    <p className="text-xs font-bold text-[#2c2e2a]">Resume Parser</p>
+                                    <p className="text-[11px] text-[#80827f]">PDF skill extraction & domain recommendations</p>
+                                </div>
+                                <div className="p-4 bg-white rounded-[20px] border-2 border-[#2c2e2a] space-y-1">
+                                    <span className="text-xl">📊</span>
+                                    <p className="text-xs font-bold text-[#2c2e2a]">Score Analytics</p>
+                                    <p className="text-[11px] text-[#80827f]">Technical accuracy & clarity breakdown</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Footer */}
+                        <div className="px-6 py-4 bg-white border-t-2 border-[#2c2e2a] flex items-center justify-between">
+                            <span className="text-xs font-bold text-[#80827f]">Designed for modern engineers</span>
+                            <div className="flex items-center gap-3">
+                                <button 
+                                    onClick={() => setIsAboutOpen(false)}
+                                    className="px-4 py-2 rounded-[50px] border-2 border-[#2c2e2a] bg-white hover:bg-[#f5f1e4] text-xs font-bold text-[#2c2e2a] cursor-pointer"
+                                >
+                                    Close
+                                </button>
+                                <Link
+                                    href="/dashboard"
+                                    onClick={() => setIsAboutOpen(false)}
+                                    className="px-5 py-2 rounded-[50px] border-2 border-[#2c2e2a] bg-[#8ed462] hover:bg-[#8ed462]/90 text-xs font-bold text-[#2c2e2a] flex items-center gap-1.5"
+                                >
+                                    <span>Try Interview Now</span>
+                                    <span className="w-1.5 h-1.5 bg-[#2ba0ff] rounded-full"></span>
+                                </Link>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             )}
         </>
     );

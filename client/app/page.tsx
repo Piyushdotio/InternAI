@@ -183,10 +183,13 @@ export default function Home() {
                   </p>
                 </div>
               </div>
-              <div className="pt-6 border-t border-[#2c2e2a]/10 flex items-center gap-1 text-xs font-bold text-[#2c2e2a]">
+              <button 
+                onClick={() => setShowDemoModal(true)}
+                className="pt-6 border-t border-[#2c2e2a]/10 flex items-center gap-1 text-xs font-bold text-[#2c2e2a] hover:text-[#2ba0ff] transition-colors cursor-pointer text-left w-full"
+              >
                 <span>Learn more</span>
                 <ArrowRight className="w-3.5 h-3.5" />
-              </div>
+              </button>
             </div>
 
             {/* Feature Card 2 */}
@@ -202,10 +205,13 @@ export default function Home() {
                   </p>
                 </div>
               </div>
-              <div className="pt-6 border-t border-[#2c2e2a]/10 flex items-center gap-1 text-xs font-bold text-[#2c2e2a]">
+              <button 
+                onClick={() => setShowDemoModal(true)}
+                className="pt-6 border-t border-[#2c2e2a]/10 flex items-center gap-1 text-xs font-bold text-[#2c2e2a] hover:text-[#2ba0ff] transition-colors cursor-pointer text-left w-full"
+              >
                 <span>Learn more</span>
                 <ArrowRight className="w-3.5 h-3.5" />
-              </div>
+              </button>
             </div>
 
             {/* Feature Card 3 */}
@@ -221,11 +227,15 @@ export default function Home() {
                   </p>
                 </div>
               </div>
-              <div className="pt-6 border-t border-[#2c2e2a]/10 flex items-center gap-1 text-xs font-bold text-[#2c2e2a]">
+              <button 
+                onClick={() => setShowDemoModal(true)}
+                className="pt-6 border-t border-[#2c2e2a]/10 flex items-center gap-1 text-xs font-bold text-[#2c2e2a] hover:text-[#2ba0ff] transition-colors cursor-pointer text-left w-full"
+              >
                 <span>Learn more</span>
                 <ArrowRight className="w-3.5 h-3.5" />
-              </div>
+              </button>
             </div>
+
           </div>
         </section>
 
