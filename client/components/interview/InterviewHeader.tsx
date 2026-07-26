@@ -33,7 +33,8 @@ export const InterviewHeader: React.FC<InterviewHeaderProps> = ({
     };
 
     return (
-        <header className="bg-white border-b border-gray-100 px-6 py-4 sticky top-0 z-40 shadow-xs flex flex-wrap items-center justify-between gap-4">
+        <header className="bg-white border-b border-gray-100 px-6 py-4 shrink-0 shadow-xs flex flex-wrap items-center justify-between gap-4 z-40">
+
             {/* Left: Domain Info & Live Badge */}
             <div className="flex items-center gap-3">
                 <div className={`w-10 h-10 rounded-xl flex items-center justify-center font-bold text-sm shadow-sm ${domainIconBg}`}>

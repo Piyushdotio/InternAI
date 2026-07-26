@@ -321,7 +321,7 @@ const InterviewSessionContent = () => {
     };
 
     return (
-        <div className="min-h-screen bg-gray-50/50 flex flex-col justify-between overflow-y-auto">
+        <div className="h-screen h-[100dvh] flex flex-col bg-gray-50/50 overflow-hidden">
             {/* Scalable Header */}
             <InterviewHeader
                 domainTitle={domain.title}
@@ -336,7 +336,7 @@ const InterviewSessionContent = () => {
             />
 
             {/* Content Body */}
-            <main className="flex-1 max-w-4xl w-full mx-auto p-4 md:p-6 pb-52 md:pb-64 space-y-4">
+            <main className="flex-1 overflow-y-auto max-w-4xl w-full mx-auto p-4 md:p-6 space-y-4">
                 {!isCompleted ? (
                     <>
                         {messages.map((msg) => (
@@ -352,7 +352,7 @@ const InterviewSessionContent = () => {
                                 </div>
                             </div>
                         )}
-                        <div ref={chatEndRef} className="h-16 w-full shrink-0" />
+                        <div ref={chatEndRef} className="h-4 w-full shrink-0" />
                     </>
                 ) : (
                     /* Interview Completion Feedback View (Exact Reference Image match) */
@@ -393,6 +393,7 @@ const InterviewSessionContent = () => {
             )}
         </div>
     );
+
 };
 
 
